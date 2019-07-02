@@ -403,13 +403,10 @@ function! s:recompute_pum(...) abort
 
     let l:ctx = asyncomplete#context()
 
-    let l:startcols = []
     let l:matches_to_filter = {}
 
     for [l:source_name, l:match] in items(s:matches)
         let l:startcol = l:match['startcol']
-        let l:startcols += [l:startcol]
-        let l:curitems = l:match['items']
 
         if l:startcol > l:ctx['col']
             call asyncomplete#log('core', 's:recompute_pum', 'ignoring due to wrong start col', l:startcol, l:ctx['col'])
@@ -419,18 +416,10 @@ function! s:recompute_pum(...) abort
         endif
     endfor
 
-    let l:startcol = min(l:startcols)
-    let l:base = l:ctx['typed'][l:startcol - 1:] " col is 1-indexed, but str 0-indexed
-
-    let l:filter_ctx = extend({
-        \ 'base': l:base,
-        \ 'startcol': l:startcol,
-        \ }, l:ctx)
-
     let l:mode = s:has_complete_info ? complete_info(['mode'])['mode'] : 'unknown'
     if l:mode ==# '' || l:mode ==# 'eval' || l:mode ==# 'unknown'
         let l:Preprocessor = empty(g:asyncomplete_preprocessor) ? function('s:default_preprocessor') : g:asyncomplete_preprocessor[0]
-        call l:Preprocessor(l:filter_ctx, l:matches_to_filter)
+        call l:Preprocessor(l:ctx, l:matches_to_filter)
     endif
 endfunction
 
